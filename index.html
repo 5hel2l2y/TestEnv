@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
   <title>***GridView***</title>
@@ -10,7 +10,7 @@
   <section id="thermostat-view"></section>
 
   <!-- jQuery Version 1.11.0 -->
-  <script src="jquery-1.11.0.js"></script>
+  <script src="jquery-1.11.1.js"></script>
 
   <!-- Include underscore -->
   <script src="underscore.js"></script>
@@ -30,12 +30,12 @@
                  key2: 'value1',
                  key3: 'value2'}];
     if(data.length) {
-      var gv = new Gridview(data);
+      var gv = new GridView(data, {blackList: ['Id']});
 
-      gv.create().appendTo($('.thermostat-view'));
+      gv.create().appendTo('#thermostat-view');
     } else {
       //indicate no schedules available
-      $('.thermostat-view').append("<p>No Schedules to Display.</p>");
+      $('#thermostat-view').append("<p>No Schedules to Display.</p>");
     }
   </script>
 </body>

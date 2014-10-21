@@ -85,7 +85,7 @@ function GridView(data, options){
         sortByColumn : function(){},
         
         create : function(){
-            this.table = jQuery('<table><thead></thead><tbody></tbody></table>');
+            this.table = jQuery('<table style="border:1px solid pink;"><thead></thead><tbody></tbody></table>');
             this._tableHeader();
             this._tableBody();
             if(this.options !== null && this.options.isPaginated()) this._nav();
@@ -100,12 +100,27 @@ function GridView(data, options){
          * @return {[type]} [description]
          * 
          * @author Sherry Yang
-         * @todo ALL THE THINGS!!!!
          */
         _tableBody : function(){
-            console.log(this.data);
+          console.log(options.blackList);
 
-            $("#target").html(_.template($("#template").html(),{items:items}));
+
+          var table = this.table;
+          for(var i = 0; i < this.data.length; i++) {
+            console.log(this.data[i]);
+            table.append($('<tr>'));
+            var valArray = _.values(this.data[i]);
+            $.each(valArray, function(index, value) {
+              // table.append(
+              //   $('<tr>').append(
+              //     $('<td style="border:1px solid pink;">').text(value)));
+
+              table.find('tr').each(function() {
+                var tRow = $(this);
+                tRow.append('<td style="border:1px solid pink;">' + value + '</td>');
+              });
+            });
+          };
         },
         _nav : function(){},
         updatePage : function(){},
@@ -118,6 +133,6 @@ function GridView(data, options){
     
         nav = function(){};
     
-    init.call(gv);
+    // init.call(gv);
     return gv;
 }
