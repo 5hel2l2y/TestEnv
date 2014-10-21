@@ -1,0 +1,37 @@
+/* Gridview
+ * ----------------------------------------------------------------------------------------------
+ */
+
+table.gridview th.asc:after {
+    content: url('../img/arrowup32red.png');
+}
+
+table.gridview th.desc:after {
+    content: url('../img/arrowdown32red.png');
+}
+
+table.gridview {
+    color: black;
+    background-color: #ddd;
+    border-radius: 10px;
+    box-shadow: 0px 1px black;
+    padding-bottom: 20px;
+}
+table.gridview tr {
+    font-weight: bold;
+}
+
+table.gridview tr:not(.header):hover > td {
+    background-color: #87AE45;
+}
+
+.table-striped>tbody>tr:nth-child(odd)>td, .table-striped>tbody>tr:nth-child(odd)>th{
+    background: rgba(135,174,69,0.50);
+}
+.table-striped>thead>tr>th,
+.table-striped>tbody>tr:nth-child(even)>td, .table-striped>tbody>tr:nth-child(even)>th{
+    /*background: rgba(135,174,69,0.70);*/
+}
+table.gridview tr:first-child{
+    border-radius: 10px;
+}
