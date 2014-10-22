@@ -95,34 +95,35 @@ function GridView(data, options){
         _tableHeader : function(){
             
         },
+        
         /**
-         * Loads data into table body, filter columns in blackList option.
+         * Populate table data, filters blackList columns.
          * @return void
+         * @since 1.1
          */
-        _tableBody : function(){
-          var table = this.table,
-              count = 1,
-              blIndex;
+        _tableBody: function () {
+            var table = this.table,
+                count = 1,
+                blIndex;
 
-          for (var i = 0; i < _.keys(this.data[0]).length; i++) {
-            if($.inArray(_.keys(this.data[0])[i], options.blackList) > -1)
-              blIndex = $.inArray(_.keys(this.data[0])[i], options.blackList);
-          };
-          $.each(this.data, function(key, obj) {
-            table.append($('<tr id="row' + count + '">'));
-            for (var i = 0; i < _.values(obj).length; i++) {
-              if(blIndex !== null) {
-                if(i == blIndex) {
-                  table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]).hide());
+            for (var i = 0; i < _.keys(this.data[0]).length; i++) {
+                if($.inArray(_.keys(this.data[0])[i], options.blackList) > -1)
+                blIndex = $.inArray(_.keys(this.data[0])[i], options.blackList);
+            }
+            $.each(this.data, function(key, obj) {
+                table.append($('<tr id="row' + count + '">'));
+                for (var i = 0; i < _.values(obj).length; i++) {
+                    if(blIndex !== null) {
+                        if(i == blIndex)
+                            table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]).hide());
+                        else
+                            table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]));
+                    }
                 }
-                else {
-                  table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]));
-                }
-              }
-            };
-            count++;
-          });
+                count++;
+            });
         },
+
         _nav : function(){},
         updatePage : function(){},
         

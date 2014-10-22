@@ -14,7 +14,8 @@
 
   <!-- Include underscore -->
   <script src="underscore.js"></script>
-  <script src="test.js"></script>
+  <!-- <script src="test.js"></script> -->
+  <script src="gridview.js"></script>
 
   <script>
     var data = [{Id: 1,
@@ -30,7 +31,7 @@
                  key2: 'value1',
                  key3: 'value2'}];
     if(data.length) {
-      var gv = new GridView(data, {blackList: ['Id']});
+      var gv = new Gridview(data, {blackList: ['Id']});
 
       gv.create().appendTo('#thermostat-view');
     } else {
