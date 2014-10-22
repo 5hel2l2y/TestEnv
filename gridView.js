@@ -96,31 +96,32 @@ function GridView(data, options){
             
         },
         /**
-         * Table Body Stuff
-         * @return {[type]} [description]
-         * 
-         * @author Sherry Yang
+         * Loads data into table body, filter columns in blackList option.
+         * @return void
          */
         _tableBody : function(){
-          console.log(options.blackList);
+          var table = this.table,
+              count = 1,
+              blIndex;
 
-
-          var table = this.table;
-          for(var i = 0; i < this.data.length; i++) {
-            console.log(this.data[i]);
-            table.append($('<tr>'));
-            var valArray = _.values(this.data[i]);
-            $.each(valArray, function(index, value) {
-              // table.append(
-              //   $('<tr>').append(
-              //     $('<td style="border:1px solid pink;">').text(value)));
-
-              table.find('tr').each(function() {
-                var tRow = $(this);
-                tRow.append('<td style="border:1px solid pink;">' + value + '</td>');
-              });
-            });
+          for (var i = 0; i < _.keys(this.data[0]).length; i++) {
+            if($.inArray(_.keys(this.data[0])[i], options.blackList) > -1)
+              blIndex = $.inArray(_.keys(this.data[0])[i], options.blackList);
           };
+          $.each(this.data, function(key, obj) {
+            table.append($('<tr id="row' + count + '">'));
+            for (var i = 0; i < _.values(obj).length; i++) {
+              if(blIndex !== null) {
+                if(i == blIndex) {
+                  table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]).hide());
+                }
+                else {
+                  table.find('tr#row' + count).append($('<td>').text(_.values(obj)[i]));
+                }
+              }
+            };
+            count++;
+          });
         },
         _nav : function(){},
         updatePage : function(){},
