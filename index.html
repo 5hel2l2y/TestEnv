@@ -8,6 +8,8 @@
 <body>
   <!-- Test Section -->
   <section id="thermostat-view"></section>
+  
+  <div id="test" style="border: 1px solid red; width: 300px;"></div>
 
   <!-- jQuery Version 1.11.0 -->
   <script src="jquery-1.11.1.js"></script>
@@ -19,17 +21,17 @@
 
   <script>
     var data = [{Id: 1,
-                 key1: 'value1',
-                 key2: 'value3',
-                 key3: 'value1'},
+                 key1: '1value1',
+                 key2: '1value3',
+                 key3: '1value1'},
                 {Id: 2,
-                 key1: 'value2',
-                 key2: 'value2',
-                 key3: 'value3'},
+                 key1: '2value2',
+                 key2: '2value2',
+                 key3: '2value3'},
                 {Id: 3,
-                 key1: 'value3',
-                 key2: 'value1',
-                 key3: 'value2'}];
+                 key1: '3value3',
+                 key2: '3value1',
+                 key3: '3value2'}];
     if(data.length) {
       var gv = new Gridview(data, {blackList: ['Id']});
 

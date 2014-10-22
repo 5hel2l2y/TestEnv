@@ -180,9 +180,10 @@ var Gridview = function(data, options){
                 blIndex = $.inArray(_.keys(this.data[0])[i], options.blackList);
             }
 
-            // for (var i = 0; i < options.blackList.length; i++) {
-            //     indexArr.push($.inArray(options.blackList[i], _.keys(this.data[0])));
-            // };
+            for (var i = 0; i < options.blackList.length; i++) {
+                indexArr.push($.inArray(options.blackList[i], _.keys(this.data[0])));
+            }
+            $('#test').text(indexArr);
             $.each(this.data, function(key, obj) {
                 table.append($('<tr id="row' + count + '">'));
                 for (var i = 0; i < _.values(obj).length; i++) {
