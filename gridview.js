@@ -33,7 +33,7 @@ var Gridview = function(data, options){
         cols: [],
         /**
          * Sets this.options to hard-coded defaults
-         * @returns {void}
+         * @returns {undefined}
          */
         _resetOptions: function () {
             this.options = {
@@ -53,7 +53,7 @@ var Gridview = function(data, options){
         /** 
          * Copies user-defined options over to this.options
          * @param {Object} options List of options
-         * @returns {void}
+         * @returns {undefined}
          * @since 1.1
          */
         _loadOptions: function (options) {
@@ -79,7 +79,7 @@ var Gridview = function(data, options){
         /**
          * Initializes the gridview object
          * @param {Object} options
-         * @returns {void}
+         * @returns {undefined}
          * @since 1.1
          */
         _init: function (options) {
@@ -97,7 +97,7 @@ var Gridview = function(data, options){
         /**
          * Error handler for Gridview, uses either user-specified error handler or console.err
          * @param {String} msg
-         * @returns {void}
+         * @returns {undefined}
          */
         error: function(msg){
           if(!_.isNull(this.options.errorHandler)) {
@@ -110,7 +110,7 @@ var Gridview = function(data, options){
         /**
          * Sorts gridview data by column (given label)
          * @param {String} propName The column (label) to sort by
-         * @return {void}
+         * @return {undefined}
          * @since 1.1
          */
         sortByColumn: function (propName) {
@@ -188,16 +188,16 @@ var Gridview = function(data, options){
             this.table = jQuery('<table><thead></thead><tbody></tbody></table>');
             this._tableHeader();
             this._tableBody();
-            if (this.options.isPaginated) this._nav();
+            /*if (this.options.isPaginated)*/ this._nav();
 
             this.table.data('gv', this);
             this.table.data('id', this.id);
-            return this.table;
+            return this.table.siblings().addBack();
         },
         
         /**
          * Builds the table header for the jQuery table
-         * @returns {void}
+         * @returns {undefined}
          * @since 1.1
          */
         _tableHeader: function () {
@@ -233,13 +233,9 @@ var Gridview = function(data, options){
 
                 //data cols
                 if (++dataColIndex < this.cols.length) {
-                    var label = this.cols[dataColIndex];
-                    if (!_.find(this.options.blackList, function (v) { return v === label; })) {
-                        th = $('<th' + 
-                                (this.options.colStyle ? ' style="' + this.options.colStyle +'"' : '') +
-                                '>' + this.cols[dataColIndex] + '</th>');
-                        th.on('click', self.doSort);
-                        thead.append(th);
+                    if($.inArray(this.cols[dataColIndex], this.options.blackList) === -1){
+                        var s = this.options.colStyle ? ' style="' + this.options.colStyle +'"' : '';
+                        $('<th'+s+'>'+this.cols[dataColIndex]+'</th>').on('click', self.doSort).appendTo(thead);
                     }
                 }
             }
@@ -247,37 +243,80 @@ var Gridview = function(data, options){
         
         /**
          * Populate table data, filters blackList columns.
-         * @return void
+         * @return undefined
          * @since 1.1
          *
          * @author Sherry Yang
-         * @todo FILTER MULTIPLE BLACKLIST COLUMNS
+         * @todo additonalCols, and pagination
          */
         _tableBody: function () {
-            var table = this.table,
-                count = 1,
-                indexArr = [];
+            //make sure table object has been created before this is called
+            if (!_.isObject(this.table))
+                this.error('GridView._tableBody: jQuery table object must be created prior to calling this funciton.');
 
-            for (var i = 0; i < options.blackList.length; i++) {
-                indexArr.push($.inArray(options.blackList[i], _.keys(this.data[0])));
-            };
+            var tr,
+                // counting = 0
+                rowCount = this.data.length,
+                count = 0,
+                blkListArray = [],
+                acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); });
 
-            for (var j = 0; j < this.data.length; j++) {
-              table.append($('<tr id="row' + count + '">'));
-                for (var i = 0; i < _.values(this.data[j]).length; i++) {
-                    if($.inArray(i, indexArr) > -1)
-                        table.find('tr#row' + count).append($('<td>').text(_.values(this.data[j])[i]).hide());
-                    else
-                        table.find('tr#row' + count).append($('<td>').text(_.values(this.data[j])[i]));
+            for (var i = 0; i < this.options.blackList.length; i++) {
+                blkListArray.push($.inArray(this.options.blackList[i], _.keys(this.data[0])));
+            }
+
+            while (count < rowCount) {
+                tr = $('<tr id="row' + count + '">').appendTo(this.table);
+                for (var k = 0; k < _.values(this.data[count]).length; k++) {
+                    if($.inArray(k, blkListArray) === -1)
+                        tr.append($('<td>').text(_.values(this.data[count])[k]));
+                }
+
+                for (var i = 0; i < _.values(this.options.additionalCols).length; i++) {
+                    if($.inArray(count, acKeys) === -1) {
+                        console.log(tr);
+                    }
+                    tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
                 }
                 count++;
             }
+
+            // for (var j = 0; j < this.data.length; j++) {
+            //     tr = $('<tr id="row' + count + '">').appendTo(this.table);
+            //     for (var k = 0; k < _.values(this.data[j]).length; k++) {
+            //         if($.inArray(k, blkListArray) === -1)
+            //             tr.append($('<td>').text(_.values(this.data[j])[k]));
+            //     }
+            //     count++;
+            // }
+
+            
         },
 
+        /**
+         * Builds navigation for pagination
+         * @returns {undefined}
+         */
         _nav: function () {
-            var lastPage = Math.ceil(this.data.length/this.options.pagesize),
-                nav = $('<span id="' + this.id + '-previous" class="gridview-prev">' + 
-                    '');
+            var lastPage = Math.ceil(this.data.length/this.options.pageSize),
+                n = $('<ul id="nav-'+this.id+'" class="gridview-nav"></ul>').insertAfter(this.table);
+                    
+            for(var i=1; i <= lastPage; i++) {
+                $('<li'+(i === this.currPage ? ' class="selected"' : '')+'>'+
+                        i+'</li>').on('click', this.goTo).appendTo(n);
+            }
+            
+            //Create next/previous nav
+            $('<span id="previous-'+this.id+'" '+
+                'class="gridview-prev'+(this.currPage === 1? ' disabled' : '')+
+                '"><</span>').on('click', this.previous).insertBefore(n);
+        
+            $('<span id="next-'+this.id+'" '+
+                'class="gridview-next'+(this.currPage === lastPage? ' disabled' : '')+
+                '">></span>').on('click', this.next).insertAfter(n);
+        
+        console.log(n.siblings().addBack());
+            
         },
         updatePage: function () {
         },
@@ -290,7 +329,7 @@ var Gridview = function(data, options){
         
         /**
          * OnClick event for th objects
-         * @returns {void}
+         * @returns {undefined}
          * @since 1.1
          */
         doSort: function () {
@@ -308,7 +347,7 @@ var Gridview = function(data, options){
             
             //Update table contents
             table.data('gv').sortByColumn($(this).text());
-            table.find('tr:has(td)').remove().end().append(table.data('gv')._tableBody());
+            table.find('tbody').empty().append(table.data('gv')._tableBody());
         }
     };
 

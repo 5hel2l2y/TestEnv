@@ -31,7 +31,16 @@
                  key2: '2value1',
                  key3: '3value2'}];
     if(data.length) {
-      var gv = new Gridview(data, {blackList: ['Id']});
+      var gv = new Gridview(data,
+                            {blackList: ['Id'],
+                             additionalCols: {
+                              10:{label: 'test10', content: 'data10'},
+                              0:{label: 'test0', content: 'data0'},
+                              1:{label: 'test1', content: 'data1'},
+                              4:{label: 'test4', content: 'data4'}
+                             }
+                            }
+                            );
 
       gv.create().appendTo('#thermostat-view');
     } else {
