@@ -274,23 +274,18 @@ var Gridview = function(data, options){
 
                 for (var i = 0; i < _.values(this.options.additionalCols).length; i++) {
                     if($.inArray(count, acKeys) === -1) {
-                        console.log(tr);
+                        // console.log(this.cols.length);
+                        
+                        //@TODO this is shifting while for loop
+                        var k = acKeys.shift();
+                        console.log(k);
+                        
                     }
                     tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
                 }
+
                 count++;
             }
-
-            // for (var j = 0; j < this.data.length; j++) {
-            //     tr = $('<tr id="row' + count + '">').appendTo(this.table);
-            //     for (var k = 0; k < _.values(this.data[j]).length; k++) {
-            //         if($.inArray(k, blkListArray) === -1)
-            //             tr.append($('<td>').text(_.values(this.data[j])[k]));
-            //     }
-            //     count++;
-            // }
-
-            
         },
 
         /**
