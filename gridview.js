@@ -254,13 +254,14 @@ var Gridview = function(data, options){
             if (!_.isObject(this.table))
                 this.error('GridView._tableBody: jQuery table object must be created prior to calling this funciton.');
 
-            var tr,
-                // counting = 0
+            var tr, td,
                 rowCount = this.data.length,
                 count = 0,
                 blkListArray = [],
                 acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); });
 
+            console.log(this.cols);
+            
             for (var i = 0; i < this.options.blackList.length; i++) {
                 blkListArray.push($.inArray(this.options.blackList[i], _.keys(this.data[0])));
             }
@@ -281,11 +282,62 @@ var Gridview = function(data, options){
                         console.log(k);
                         
                     }
-                    tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
+                    console.log(acKeys);
+
+                    // tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
                 }
 
                 count++;
             }
+
+            for(i = 0; i < rowCount; i++){
+               var tbRow = $('<tr>').appendTo(this.table);
+               for (j = 0; j < rowCount; j++){
+                  tbRow.append($('<td>').text('row ' + i + ', column ' + j));
+               }
+            }
+
+
+            // var acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); }),
+            //     additionalColsSize = acKeys.length,
+            //     additionalCols = this.options.additionalCols,
+            //     start = 0,
+            //     end = this.data.length - 1,
+            //     colCount = 0,
+            //     tempArray = [],
+            //     tr = $('<tr>').appendTo(this.table);
+
+            // for (var rows = start; rows <= end; rows++) {
+            //     colCount = 0;
+
+            //     for (var index in additionalCols) {
+            //         if(!additionalCols[index].hasOwnProperty('content'))
+            //             continue;
+
+            //         tempArray[index] = additionalCols[index]['content'];
+            //         if(_.size(tempArray[index] > 1)) {
+            //             for (var insideIndex = 1; insideIndex < _.size(tempArray[index]); insideIndex += 2) {
+            //                 if(this.data[rows].hasOwnProperty(tempArray[index][insideIndex]))
+            //                     tempArray[index][insideIndex] = this.data[rows][tempArray[index][insideIndex]];
+            //             };
+            //         }
+            //         console.log(tempArray[index]);
+            //     }
+
+            //     for (var cols in this.data[rows]) {
+            //         if(additionalCols.hasOwnProperty(++colCount - 1)) {
+            //             do {
+            //                 console.log(tempArray[colCount - 1]);
+            //                 tr.append($('<td>').text(tempArray[colCount - 1]));
+            //             } while (additionalCols.hasOwnProperty(++colCount - 1));
+            //         }
+
+            //         if(this.options.hasOwnProperty('blackList'))
+            //             continue;
+
+            //         console.log(this.data[rows][cols]);
+            //     }
+            // }
         },
 
         /**
