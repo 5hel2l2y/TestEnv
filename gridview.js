@@ -253,49 +253,96 @@ var Gridview = function(data, options){
             //make sure table object has been created before this is called
             if (!_.isObject(this.table))
                 this.error('GridView._tableBody: jQuery table object must be created prior to calling this funciton.');
+            this.table.css('border', '2px solid black');
 
-            var tr, td,
-                rowCount = this.data.length,
-                count = 0,
-                blkListArray = [],
-                acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); });
+            var dataKeys = _.keys(this.data[0]),
+                dataIndex = 0,
+                dataRows = this.data.length,
+                dataCols = _.size(this.data[0])
+                totalCols = dataCols + _.size(this.options.additionalCols),
+                mainACKeys = _.sortBy(_.keys(this.options.additionalCols), function(k) { return parseInt(k); });
 
-            console.log(this.cols);
+            //first loop
+            for (var i = 0; i < dataRows; i++) {
+              //renew key list
+              var acKeys = mainACKeys;
+                  //create row obj
+              var tr = $('<tr id="row' + i + '">').appendTo(this.table);
+console.log(acKeys);
+              for (var j = 0; j < totalCols; j++) {
+                //additional cols logic
+                  if (acKeys.length && (acKeys[0] === j || dataIndex <= dataCols)) {
+                    do {
+                      var k = acKeys.shift();
+                      console.log(j, k, this.options.additionalCols[k].content);
+                      //create td
+                      tr.append($('<td>').text(this.options.additionalCols[k].content).css('border', '2px solid red'));
+                      j++;
+                    } while (acKeys.length && (acKeys[0] === j || dataIndex <= dataCols));
+                  }
+
+                
+                // if(dataIndex < dataCols) {
+                //   //blacklist logic
+                //   // if ($.inArray(_.keys(this.data[i]), this.options.blackList))
+                //   //   continue;
+                //   console.log(dataIndex, _.values(this.data[i]));
+
+                //   //add td
+                //   tr.append($('<td>').text(_.values(this.data[i][dataIndex])).css('border', '2px solid green'));
+                //   // dataIndex++;
+                //   // j++;
+                // }
+              }
+              //add new row to table
+            }
             
-            for (var i = 0; i < this.options.blackList.length; i++) {
-                blkListArray.push($.inArray(this.options.blackList[i], _.keys(this.data[0])));
-            }
+            // for (var i = 0; i < this.options.blackList.length; i++) {
+            //     blkListArray.push($.inArray(this.options.blackList[i], _.keys(this.data[0])));
+            // }
 
-            while (count < rowCount) {
-                tr = $('<tr id="row' + count + '">').appendTo(this.table);
-                for (var k = 0; k < _.values(this.data[count]).length; k++) {
-                    if($.inArray(k, blkListArray) === -1)
-                        tr.append($('<td>').text(_.values(this.data[count])[k]));
-                }
+            // while (count < rowCount) {
+            //     tr = $('<tr id="row' + count + '">').appendTo(this.table);
+            //     for (var k = 0; k < _.values(this.data[count]).length; k++) {
+            //         if($.inArray(k, blkListArray) === -1)
+            //             tr.append($('<td>').text(_.values(this.data[count])[k]).css('border', '2px solid red'));
+            //     }
 
-                for (var i = 0; i < _.values(this.options.additionalCols).length; i++) {
-                    if($.inArray(count, acKeys) === -1) {
-                        // console.log(this.cols.length);
+            //     for (var i = 0; i < _.values(this.options.additionalCols).length; i++) {
+            //         if($.inArray(count, acKeys) === -1) {
+            //             // console.log(this.cols.length);
                         
-                        //@TODO this is shifting while for loop
-                        var k = acKeys.shift();
-                        console.log(k);
+            //             //@TODO this is shifting while for loop
+            //             var k = acKeys.shift();
+            //             console.log(k);
                         
-                    }
-                    console.log(acKeys);
+            //         }
+            //         console.log(acKeys);
 
-                    // tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
-                }
+            //         // tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
+            //     }
 
-                count++;
-            }
+            //     count++;
+            // }
 
-            for(i = 0; i < rowCount; i++){
-               var tbRow = $('<tr>').appendTo(this.table);
-               for (j = 0; j < rowCount; j++){
-                  tbRow.append($('<td>').text('row ' + i + ', column ' + j));
-               }
-            }
+            // for(i = 0; i < rowCount; i++){
+            //   var tbRow = $('<tr>').appendTo(this.table);
+            //   var k;
+
+            //   if($.inArray(count, acKeys) === -1) {
+            //     k = acKeys.shift();
+            //   }
+            //   for (j = 0; j < rowCount; j++){
+            //     if(k == j) {
+            //       console.log(_.values(this.options.additionalCols)[k]['content']);
+            //       tbRow.prepend($('<td>').text(_.values(this.options.additionalCols)[k]['content']));
+            //     }
+            //     // else {
+            //     //   tbRow.append($('<td>').text(_.values(this.options.additionalCols)[k]['content']));
+            //     // }
+            //     tbRow.append($('<td>').text('row ' + i + ', column ' + j).css('border', '2px solid blue'));
+            //   }
+            // }
 
 
             // var acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); }),
