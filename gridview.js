@@ -28,6 +28,7 @@ var Gridview = function(data, options){
 
     var gv = {
         data: data,
+        table: null,
         currPage: 1,
         options: null,
         cols: [],
@@ -185,11 +186,21 @@ var Gridview = function(data, options){
          * @since 1.1
          */
         create: function () {
-            this.table = jQuery('<table><thead></thead><tbody></tbody></table>');
+            //Create table with configured attributes
+            var s = this.options.style.length ? '' : '';
+            this.table = jQuery('<table'+s+'><thead></thead><tbody></tbody></table>');
+
+            if(this.options.klass.length)  this.table.attr('class', this.options.klass);
+            if(this.options.legend.length) {
+                $('<legend></legend>').text(this.options.legend).prependTo(this.table)
+            }
+            
+            //create table body and header
             this._tableHeader();
             this._tableBody();
             /*if (this.options.isPaginated)*/ this._nav();
 
+            //attach data to DOM element and return (with items as required)
             this.table.data('gv', this);
             this.table.data('id', this.id);
             return this.table.siblings().addBack();
@@ -215,6 +226,15 @@ var Gridview = function(data, options){
                     self = this;
 
             while (++i < colLength) {
+              //data cols
+                if (++dataColIndex < this.cols.length) {
+                    var label = this.cols[dataColIndex];
+                    if (!_.find(this.options.blackList, function (v) { return v === label; })) {
+                        var s = this.options.colStyle ? ' style="' + this.options.colStyle +'"' : '';
+                        $('<th'+s+'>'+this.cols[dataColIndex]+'</th>').on('click', self.doSort).css('border', '2px solid green').appendTo(thead);
+                    }
+                }
+
                 if(acKeys.length && (parseInt(acKeys[0]) === i || dataColIndex >= this.cols.length)) {
                     //Insert additional cols
                     do {
@@ -228,163 +248,72 @@ var Gridview = function(data, options){
                             th += ' style="' + this.options.additionalCols[k].style + '"';
                         }
                         thead.append(th + '>' + this.options.additionalCols[k].label + '</th>');
-                    } while (acKeys.length && (parseInt(acKeys[0]) === ++i || dataColIndex >= this.cols.length));
-                }
-
-                //data cols
-                if (++dataColIndex < this.cols.length) {
-                    if($.inArray(this.cols[dataColIndex], this.options.blackList) === -1){
-                        var s = this.options.colStyle ? ' style="' + this.options.colStyle +'"' : '';
-                        $('<th'+s+'>'+this.cols[dataColIndex]+'</th>').on('click', self.doSort).appendTo(thead);
-                    }
+                        i++;
+                    } while (acKeys.length && (parseInt(acKeys[0]) === i || dataColIndex >= this.cols.length));
                 }
             }
         },
         
         /**
-         * Populate table data, filters blackList columns.
+         * Populate table data, filters blackList columns, add user added additional
+         * columns, and pagination.
          * @return undefined
          * @since 1.1
          *
          * @author Sherry Yang
-         * @todo additonalCols, and pagination
          */
         _tableBody: function () {
-            //make sure table object has been created before this is called
-            if (!_.isObject(this.table))
-                this.error('GridView._tableBody: jQuery table object must be created prior to calling this funciton.');
-            this.table.css('border', '2px solid black');
+          //make sure table object has been created before this is called
+          if (!_.isObject(this.table))
+              this.error('GridView._tableBody: jQuery table object must be created prior to calling this funciton.');
 
-            var dataKeys = _.keys(this.data[0]),
-                dataIndex = 0,
-                dataRows = this.data.length,
-                dataCols = _.size(this.data[0])
-                totalCols = dataCols + _.size(this.options.additionalCols),
-                mainACKeys = _.sortBy(_.keys(this.options.additionalCols), function(k) { return parseInt(k); });
+          var dataKeys = _.keys(this.data[0]),
+              dataIndex = 0,
+              dataRows = this.data.length,
+              dataCols = _.size(this.data[0]),
+              totalCols = dataCols + _.size(this.options.additionalCols),
+              acKeys = null,
+              numPages = Math.ceil(dataRows / this.options.pageSize),
+              start = 0,
+              end = dataRows;
+          
+          if(this.options.isPaginated) {
+            //indentify start and end on pagination
+            start = (this.currPage - 1) * this.options.pageSize;
+            end = _.min([this.currPage * this.options.pageSize, dataRows]);
+          }
 
-            //first loop
-            for (var i = 0; i < dataRows; i++) {
-              //renew key list
-              var acKeys = mainACKeys;
-                  //create row obj
-              var tr = $('<tr id="row' + i + '">').appendTo(this.table);
-console.log(acKeys);
-              for (var j = 0; j < totalCols; j++) {
-                //additional cols logic
-                  if (acKeys.length && (acKeys[0] === j || dataIndex <= dataCols)) {
-                    do {
-                      var k = acKeys.shift();
-                      console.log(j, k, this.options.additionalCols[k].content);
-                      //create td
-                      tr.append($('<td>').text(this.options.additionalCols[k].content).css('border', '2px solid red'));
-                      j++;
-                    } while (acKeys.length && (acKeys[0] === j || dataIndex <= dataCols));
+          //first loop
+          for (var rowIndex = start; rowIndex < end; rowIndex++) {
+            //renew key list
+            acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k) { return parseInt(k); });
+            dataIndex = 0;
+            //create row obj
+            var tr = $('<tr id="row' + rowIndex + '">');
+
+            for (var colIndex = 0; colIndex < totalCols; colIndex++) {
+                if (dataIndex < dataCols) {
+                  //blacklist logic
+                  if ($.inArray(dataKeys[dataIndex], this.options.blackList) === -1) {
+                    //add td
+                    tr.append($('<td>').text(this.data[rowIndex][dataKeys[dataIndex]]).css('border', '2px solid green'));
                   }
+                  dataIndex++;
+                }
 
-                
-                // if(dataIndex < dataCols) {
-                //   //blacklist logic
-                //   // if ($.inArray(_.keys(this.data[i]), this.options.blackList))
-                //   //   continue;
-                //   console.log(dataIndex, _.values(this.data[i]));
-
-                //   //add td
-                //   tr.append($('<td>').text(_.values(this.data[i][dataIndex])).css('border', '2px solid green'));
-                //   // dataIndex++;
-                //   // j++;
-                // }
-              }
-              //add new row to table
+              //additional cols logic
+                if (acKeys.length && (acKeys[0] == colIndex || dataIndex >= dataCols)) {
+                  do {
+                    var k = acKeys.shift();
+                    //create td
+                    tr.append($('<td>').text(this.options.additionalCols[k].content));
+                    colIndex++;
+                  } while (acKeys.length && (acKeys[0] == colIndex || dataIndex >= dataCols));
+                }
             }
-            
-            // for (var i = 0; i < this.options.blackList.length; i++) {
-            //     blkListArray.push($.inArray(this.options.blackList[i], _.keys(this.data[0])));
-            // }
-
-            // while (count < rowCount) {
-            //     tr = $('<tr id="row' + count + '">').appendTo(this.table);
-            //     for (var k = 0; k < _.values(this.data[count]).length; k++) {
-            //         if($.inArray(k, blkListArray) === -1)
-            //             tr.append($('<td>').text(_.values(this.data[count])[k]).css('border', '2px solid red'));
-            //     }
-
-            //     for (var i = 0; i < _.values(this.options.additionalCols).length; i++) {
-            //         if($.inArray(count, acKeys) === -1) {
-            //             // console.log(this.cols.length);
-                        
-            //             //@TODO this is shifting while for loop
-            //             var k = acKeys.shift();
-            //             console.log(k);
-                        
-            //         }
-            //         console.log(acKeys);
-
-            //         // tr.append($('<td>').text(_.values(this.options.additionalCols)[i].content));
-            //     }
-
-            //     count++;
-            // }
-
-            // for(i = 0; i < rowCount; i++){
-            //   var tbRow = $('<tr>').appendTo(this.table);
-            //   var k;
-
-            //   if($.inArray(count, acKeys) === -1) {
-            //     k = acKeys.shift();
-            //   }
-            //   for (j = 0; j < rowCount; j++){
-            //     if(k == j) {
-            //       console.log(_.values(this.options.additionalCols)[k]['content']);
-            //       tbRow.prepend($('<td>').text(_.values(this.options.additionalCols)[k]['content']));
-            //     }
-            //     // else {
-            //     //   tbRow.append($('<td>').text(_.values(this.options.additionalCols)[k]['content']));
-            //     // }
-            //     tbRow.append($('<td>').text('row ' + i + ', column ' + j).css('border', '2px solid blue'));
-            //   }
-            // }
-
-
-            // var acKeys = _.sortBy(_.keys(this.options.additionalCols), function(k){ return parseInt(k); }),
-            //     additionalColsSize = acKeys.length,
-            //     additionalCols = this.options.additionalCols,
-            //     start = 0,
-            //     end = this.data.length - 1,
-            //     colCount = 0,
-            //     tempArray = [],
-            //     tr = $('<tr>').appendTo(this.table);
-
-            // for (var rows = start; rows <= end; rows++) {
-            //     colCount = 0;
-
-            //     for (var index in additionalCols) {
-            //         if(!additionalCols[index].hasOwnProperty('content'))
-            //             continue;
-
-            //         tempArray[index] = additionalCols[index]['content'];
-            //         if(_.size(tempArray[index] > 1)) {
-            //             for (var insideIndex = 1; insideIndex < _.size(tempArray[index]); insideIndex += 2) {
-            //                 if(this.data[rows].hasOwnProperty(tempArray[index][insideIndex]))
-            //                     tempArray[index][insideIndex] = this.data[rows][tempArray[index][insideIndex]];
-            //             };
-            //         }
-            //         console.log(tempArray[index]);
-            //     }
-
-            //     for (var cols in this.data[rows]) {
-            //         if(additionalCols.hasOwnProperty(++colCount - 1)) {
-            //             do {
-            //                 console.log(tempArray[colCount - 1]);
-            //                 tr.append($('<td>').text(tempArray[colCount - 1]));
-            //             } while (additionalCols.hasOwnProperty(++colCount - 1));
-            //         }
-
-            //         if(this.options.hasOwnProperty('blackList'))
-            //             continue;
-
-            //         console.log(this.data[rows][cols]);
-            //     }
-            // }
+            //add new row to table
+            tr.appendTo(this.table);
+          }
         },
 
         /**
@@ -409,16 +338,69 @@ console.log(acKeys);
                 'class="gridview-next'+(this.currPage === lastPage? ' disabled' : '')+
                 '">></span>').on('click', this.next).insertAfter(n);
         
-        console.log(n.siblings().addBack());
+        // console.log(n.siblings().addBack());
             
         },
         updatePage: function () {
         },
+        
+        /**
+         * OnClick method for Next navigation button, gets next page content and increments page indicator
+         * @returns {undefined}
+         * @since 1.1
+         */
         next: function () {
+            var gv = $(this).siblings().find('table').data('gv');
+            
+            //make sure forward progression is actually allowed
+            if($(this).hasClass('disabled') 
+                    || gv.currPage === Math.ceil(gv.data.length/gv.options.pageSize)) return;
+            
+            //update table contents and currPage counter
+            gv.currPage++;
+            gv.updatePage();
+            
+            //update navigation indicator
+            $('#nav-'+gv.id+' li.selected').removeClass('selected').next().addClass('selected');
         },
+        
+        /**
+         * OnClick method for Previous navigation button, gets previous page content and decrements page indicator
+         * @returns {undefined}
+         * @since 1.1
+         */
         previous: function () {
+            var gv = $(this).siblings().find('table').data('gv');
+            
+            //make sure backward progression is actually allowed
+            if($(this).hasClass('disabled') || gv.currPage === 1) return;
+            
+            //update table contents and currPage counter
+            gv.currPage--;
+            gv.updatePage();
+            
+            //update navigation indicator
+            $('#nav-'+gv.id+' li.selected').removeClass('selected').prev().addClass('selected');
         },
-        goTo: function () {
+        
+        /**
+         * OnClick method for page numbers, gets the page content for given number
+         * @param {type} pageNum The page for which data should be fetched
+         * @returns {undefined}
+         * @since 1.1
+         */
+        goTo: function (pageNum) {
+            var gv = $(this).closest('ul').siblings().find('table').data('gv');
+            
+            //Make sure pageNum is in range
+            if(pageNum < 1 || pageNum > Math.ceil(gv.data.length/gv.options.pageSize)) return;
+            
+            //update table contents and currPage counter
+            gv.currPage = pageNum;
+            gv.updatePage();
+            
+            //update nav pageIndicator
+            $(this).addClass('selected').siblings('.selected').removeClass('selected');
         },
         
         /**

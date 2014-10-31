@@ -3,49 +3,180 @@
 
 <head>
   <title>***GridView***</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap.min.css">
 </head>
 
 <body>
   <!-- Test Section -->
   <section id="thermostat-view"></section>
-  
+
+  <!-- <div align="center">
+    <h4>Mock request to server via mockjax</h4>
+    <div>
+      <p align="center">
+        <button class="btn btn-primary" onclick="sayHelloFakeJSON();">Test fake Ajax Request</button>
+      </p>
+      <h5>Output will render below</h5>
+      <div id="output_fake" class="output"><img src="http://imgb.nxjimg.com/emp_image/offerdetail/restaurant/loading.gif" /></div>
+    </div>
+  </div> -->  
+
+  <!-- <div align="center">
+  <h4>Demo - Actual AJAX request to server</h4>
+  <div>
+  <p align="center"><button onclick="sayHello();" class="btn btn-success">Test Actual Request</button></p>
+  <h5>Output will render below</h5>
+  <div id="output_actual" class="output"></div>
+  </div>
+  </div>
+  <hr> -->
+  <div align="center">
+  <h4>Demo - Fake (Moke) request to server via mokejax</h4>
+  <div>
+  <p align="center"><button onclick="sayHelloFake();" class="btn btn-primary">Test fake Ajax Request</button></p>
+  <h5>Output will render below</h5>
+  <div id="output_fake" class="output"></div>
+  </div>
+  </div>
+  <div align="center">
+  <h4>Demo - Fake (Moke) request fake.json file for actual response.</h4>
+  <div>
+  <p align="center"><button onclick="sayHelloFakeJSON();" class="btn btn-primary">Test fake Ajax Request</button></p>
+  <h5>Output will render below</h5>
+  <div id="output_fake_json" class="output"></div>
+  </div>
+  </div>
+
   <!-- jQuery Version 1.11.0 -->
   <script src="jquery-1.11.1.js"></script>
 
   <!-- Include underscore -->
   <script src="underscore.js"></script>
-  <!-- <script src="test.js"></script> -->
-  <script src="gridview.js"></script>
+
+  <script src="../ToolkitJS/gridview.js"></script>
+  <script src="../jquery-mockjax/jquery.mockjax.js"></script>
 
   <script>
     var data = [{Id: 1,
                  key1: '1value1',
-                 key2: '2value3',
-                 key3: '3value1'},
+                 key2: '2value2',
+                 key3: '3value3'},
                 {Id: 2,
                  key1: '1value2',
                  key2: '2value2',
-                 key3: '3value3'},
+                 key3: '3value2'},
                 {Id: 3,
                  key1: '1value3',
-                 key2: '2value1',
-                 key3: '3value2'}];
+                 key2: '2value3',
+                 key3: '3value3'},
+                {Id: 4,
+                 key1: '1value4',
+                 key2: '2value4',
+                 key3: '3value4'},
+                {Id: 5,
+                 key1: '1value5',
+                 key2: '2value5',
+                 key3: '3value5'},
+                {Id: 6,
+                 key1: '1value6',
+                 key2: '2value6',
+                 key3: '3value6'},
+                {Id: 7,
+                 key1: '1value7',
+                 key2: '2value7',
+                 key3: '3value7'},
+                {Id: 8,
+                 key1: '1value8',
+                 key2: '2value8',
+                 key3: '3value8'},
+                {Id: 9,
+                 key1: '1value9',
+                 key2: '2value9',
+                 key3: '3value9'},
+                {Id: 10,
+                 key1: '1value10',
+                 key2: '2value10',
+                 key3: '3value10'},
+                {Id: 11,
+                 key1: '1value11',
+                 key2: '2value11',
+                 key3: '3value11'},
+                {Id: 12,
+                 key1: '1value12',
+                 key2: '2value12',
+                 key3: '3value12'}];
     if(data.length) {
       var gv = new Gridview(data,
                             {blackList: ['Id'],
                              additionalCols: {
                               10:{label: 'test10', content: 'data10'},
                               0:{label: 'test0', content: 'data0'},
-                              1:{label: 'test1', content: 'data1'},
+                              1:{label: 'test1', content: '<input type="text" value="%Id%" />'},
                               4:{label: 'test4', content: 'data4'}
-                             }
-                            }
-                            );
+                             },
+                             isPaginated: true,
+                             pageSize: 5
+                            });
 
       gv.create().appendTo('#thermostat-view');
     } else {
       //indicate no schedules available
       $('#thermostat-view').append("<p>No Schedules to Display.</p>");
+    }
+
+    function sayHello() {
+      $.ajax({
+        url:"hello.php"
+      }).done(function(response) { 
+        $('#output_actual').html(response);
+      });
+    }
+    
+    function sayHelloFake() {
+      $.mockjax({
+        url:"hello.php",
+        responseTime:0,
+        responseText:'A text response from moke'
+      });
+
+      $.ajax({
+        url:"hello.php"
+      }).done(function(response) {
+        $('#output_fake').html(response);
+        $.mockjax.clear();
+      });
+    }
+    
+    function sayHelloFakeJSON() {
+      $.mockjax({
+        url:"hello.php",
+        proxy:'sample.json',
+        responseTime:0
+        // dataType:'json'
+      });
+
+      $.ajax({
+        url:"hello.php"
+        // dataType:'json'
+      }).done(function(json_response) {
+        var data = $.parseJSON(json_response);
+console.log(data);
+        var gv = new Gridview(json_response);
+
+        gv.create().appendTo('#output_fake_json'); 
+//         var names=[];
+
+//         for(i in data.employees) {
+//           names.push(data.employees[i].firstName);
+//         }
+
+//         var output=names.join("<br/>");
+// console.log(names, output);
+//         $('#output_fake_json').html(output);
+        $.mockjax.clear();
+      });
     }
   </script>
 </body>
